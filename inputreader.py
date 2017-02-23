@@ -5,11 +5,14 @@ class Video(object):
         self.size = size
 
 class Endpoint(object):
-    def __init__(self, master_latency):
+    def __init__(self, eid, master_latency):
+        self.eid = eid
         self.master_latency = master_latency
         self.cache_servers = {}
-    def add_cache_server(self, cache_server):
+        self.cs_latencies = {}
+    def add_cache_server(self, cache_server, latency):
         self.cache_servers[cache_server.csid] = cache_server
+        self.cs_latencies[cache_server.csid] = latency
         cache_server.endpoints.append(self)
 
 class CacheServer(object):
@@ -36,18 +39,18 @@ def read_file(filename):
         for vid, size_str in enumerate(lines[1].split()):
             videos.append(Video(vid, int(size_str)))
         line_i = 2
-        for i in xrange(endpointcount):
+        for eid in xrange(endpointcount):
             line = lines[line_i]
             line_i += 1
             master_latency, cservers_count = [int(x) for x in line.split()]
-            endpoint = Endpoint(master_latency)
+            endpoint = Endpoint(eid, master_latency)
             for k in xrange(cservers_count):
                 line2 = lines[line_i]
                 line_i += 1
-                cserver_id, latency = [int(x) for x in line.split()]
+                cserver_id, latency = [int(x) for x in line2.split()]
                 if cserver_id not in cservers:
                     cservers[cserver_id] = CacheServer(cserver_id)
-                endpoint.add_cache_server(cservers[cserver_id])
+                endpoint.add_cache_server(cservers[cserver_id], latency)
             endpoints.append(endpoint)
         for i in xrange(rdcount):
             line = lines[line_i]
@@ -59,8 +62,16 @@ def read_file(filename):
 if __name__ == "__main__":
     import sys
     videos, endpoints, cservers, requests = read_file(sys.argv[1])
-    print(videos)
-    print(endpoints)
-    print(cservers)
-    print(requests)
+    for video in videos:
+        print("video {}, size {}".format(video.vid, video.size))
+    for endpoint in endpoints:
+        print("endpoint {}, mlat {}".format(endpoint.eid, endpoint.master_latency))
+        for cs in sorted(endpoint.cache_servers.values(), key=lambda x:x.csid):
+            print("    cache server {}, latency {}".format(cs.csid, endpoint.cs_latencies[cs.csid]))
+    for cs in sorted(cservers.values(), key=lambda x:x.csid):
+        print("cache server {}".format(cs.csid))
+        for endpoint in cs.endpoints:
+            print("    endpoint {}, latency {}".format(endpoint.eid, endpoint.cs_latencies[cs.csid]))
+    for r in requests:
+        print("request for video {}, from endpoint {}, count {}".format(r.video.vid, r.endpoint.eid, r.count))
     
