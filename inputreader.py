@@ -38,6 +38,9 @@ class CacheServer(object):
         return video.vid in self.videos
     def has_room_for(self, video):
         return self.total_size + video.size <= self.capacity
+    def clear(self):
+        self.videos = {}
+        self.total_size = 0
 
 class Request(object):
     def __init__(self, video, endpoint, count):
