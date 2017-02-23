@@ -1,3 +1,4 @@
+from builtins import range
 
 class Video(object):
     def __init__(self, vid, size):
@@ -39,12 +40,12 @@ def read_file(filename):
         for vid, size_str in enumerate(lines[1].split()):
             videos.append(Video(vid, int(size_str)))
         line_i = 2
-        for eid in xrange(endpointcount):
+        for eid in range(endpointcount):
             line = lines[line_i]
             line_i += 1
             master_latency, cservers_count = [int(x) for x in line.split()]
             endpoint = Endpoint(eid, master_latency)
-            for k in xrange(cservers_count):
+            for k in range(cservers_count):
                 line2 = lines[line_i]
                 line_i += 1
                 cserver_id, latency = [int(x) for x in line2.split()]
@@ -52,7 +53,7 @@ def read_file(filename):
                     cservers[cserver_id] = CacheServer(cserver_id)
                 endpoint.add_cache_server(cservers[cserver_id], latency)
             endpoints.append(endpoint)
-        for i in xrange(rdcount):
+        for i in range(rdcount):
             line = lines[line_i]
             line_i += 1
             video_id, endpoint_id, request_count = [int(x) for x in line.split()]
