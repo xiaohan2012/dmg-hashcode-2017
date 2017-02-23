@@ -20,6 +20,11 @@ class CacheServer(object):
     def __init__(self, csid):
         self.csid = csid
         self.endpoints = []
+        self.videos = []
+    def add_video(self, video):
+        self.videos.append(video)
+    def has_video(self, video):
+        return video in self.videos
 
 class Request(object):
     def __init__(self, video, endpoint, count):
@@ -60,9 +65,8 @@ def read_file(filename):
             requests.append(Request(videos[video_id], endpoints[endpoint_id], request_count))
         return videos, endpoints, cservers, requests
 
-if __name__ == "__main__":
-    import sys
-    videos, endpoints, cservers, requests = read_file(sys.argv[1])
+
+def debug_output(videos, endpoints, cservers, requests):
     for video in videos:
         print("video {}, size {}".format(video.vid, video.size))
     for endpoint in endpoints:
@@ -73,6 +77,15 @@ if __name__ == "__main__":
         print("cache server {}".format(cs.csid))
         for endpoint in cs.endpoints:
             print("    endpoint {}, latency {}".format(endpoint.eid, endpoint.cs_latencies[cs.csid]))
+        for video in cs.videos:
+            print("    cached video {}".format(video.vid))
     for r in requests:
         print("request for video {}, from endpoint {}, count {}".format(r.video.vid, r.endpoint.eid, r.count))
+
+
+if __name__ == "__main__":
+    import sys
+    videos, endpoints, cservers, requests = read_file(sys.argv[1])
+    cservers.values()[0].add_video(videos[0])
+    debug_output(videos, endpoints, cservers, requests)
     
