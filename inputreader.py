@@ -17,14 +17,17 @@ class Endpoint(object):
         cache_server.endpoints.append(self)
 
 class CacheServer(object):
-    def __init__(self, csid):
+    def __init__(self, csid, capacity):
         self.csid = csid
+        self.capacity = capacity
         self.endpoints = []
         self.videos = []
     def add_video(self, video):
         self.videos.append(video)
     def has_video(self, video):
         return video in self.videos
+    def has_room_for(self, video):
+        return sum([x.size for x in self.videos]) + video.size <= self.capacity
 
 class Request(object):
     def __init__(self, video, endpoint, count):
@@ -55,7 +58,7 @@ def read_file(filename):
                 line_i += 1
                 cserver_id, latency = [int(x) for x in line2.split()]
                 if cserver_id not in cservers:
-                    cservers[cserver_id] = CacheServer(cserver_id)
+                    cservers[cserver_id] = CacheServer(cserver_id, capacitymb)
                 endpoint.add_cache_server(cservers[cserver_id], latency)
             endpoints.append(endpoint)
         for i in range(rdcount):
