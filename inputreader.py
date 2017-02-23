@@ -11,6 +11,7 @@ class Endpoint(object):
         self.master_latency = master_latency
         self.cache_servers = {}
         self.cs_latencies = {}
+        self.requests = []
     def add_cache_server(self, cache_server, latency):
         self.cache_servers[cache_server.csid] = cache_server
         self.cs_latencies[cache_server.csid] = latency
@@ -51,7 +52,7 @@ def read_file(filename):
         videocount, endpointcount, rdcount, cservercount, capacitymb = [int(x) for x in header.split()]
 
         videos = []
-        endpoints = []
+        endpoints = {}
         cservers = {}
         requests = []
         for vid, size_str in enumerate(lines[1].split()):
@@ -69,13 +70,16 @@ def read_file(filename):
                 if cserver_id not in cservers:
                     cservers[cserver_id] = CacheServer(cserver_id, capacitymb)
                 endpoint.add_cache_server(cservers[cserver_id], latency)
-            endpoints.append(endpoint)
+            endpoints[endpoint.eid] = endpoint
         for i in range(rdcount):
             line = lines[line_i]
             line_i += 1
             video_id, endpoint_id, request_count = [int(x) for x in line.split()]
-            requests.append(Request(videos[video_id], endpoints[endpoint_id], request_count))
-        return videos, endpoints, cservers, requests
+            request = Request(videos[video_id], endpoints[endpoint_id], request_count)
+            requests.append(request)
+            endpoints[endpoint_id].requests.append(request)
+
+        return videos, endpoints.values(), cservers, requests
 
 
 def debug_output(videos, endpoints, cservers, requests):
