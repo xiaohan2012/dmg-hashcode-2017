@@ -6,7 +6,9 @@ def write_output(cservers):
             using += 1
     print("{}".format(using))
     for cs in cservers.values():
-        print(" ".join([str(cs.csid)] + [str(x.vid) for x in cs.videos]))
+        if cs.videos:
+            print(" ".join([str(cs.csid)] + [str(x.vid)
+                for x in sorted(cs.get_video_list(), key=lambda y:y.vid)]))
 
 
 if __name__ == "__main__":

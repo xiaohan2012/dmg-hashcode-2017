@@ -21,13 +21,22 @@ class CacheServer(object):
         self.csid = csid
         self.capacity = capacity
         self.endpoints = []
-        self.videos = []
+        self.videos = {}
+        self.total_size = 0
     def add_video(self, video):
-        self.videos.append(video)
+        if video.vid not in self.videos:
+            self.videos[video.vid] = video
+            self.total_size += video.size
+    def remove_video(self, video):
+        if video.vid in self.videos:
+            self.total_size -= video.size
+            del self.videos[video.vid]
+    def get_video_list(self):
+        return self.videos.values()
     def has_video(self, video):
-        return video in self.videos
+        return video.vid in self.videos
     def has_room_for(self, video):
-        return sum([x.size for x in self.videos]) + video.size <= self.capacity
+        return self.total_size + video.size <= self.capacity
 
 class Request(object):
     def __init__(self, video, endpoint, count):
@@ -80,7 +89,7 @@ def debug_output(videos, endpoints, cservers, requests):
         print("cache server {}".format(cs.csid))
         for endpoint in cs.endpoints:
             print("    endpoint {}, latency {}".format(endpoint.eid, endpoint.cs_latencies[cs.csid]))
-        for video in cs.videos:
+        for video in cs.get_video_list():
             print("    cached video {}".format(video.vid))
     for r in requests:
         print("request for video {}, from endpoint {}, count {}".format(r.video.vid, r.endpoint.eid, r.count))
