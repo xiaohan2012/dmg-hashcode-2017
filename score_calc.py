@@ -12,6 +12,15 @@ def calculate_score(videos, endpoints, cservers, requests):
     return total_latency * 1000. / total_requests
 
 
+def check_validity(cservers):
+    for cs in cservers.values():
+        recalc_size = sum([x.size for x in cs.get_video_list()])
+        if recalc_size != cs.total_size:
+            raise Exception("recalc_size {} and total_size {} differ for cs {}".format(recalc_size, cs.total_size, cs.csid))
+        if recalc_size > cs.capacity:
+            raise Exception("sum of cached file sizes over capacity for cs {}".format(cs.csid))
+
+
 if __name__ == "__main__":
     import sys
     import inputreader

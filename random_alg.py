@@ -12,4 +12,5 @@ if __name__ == "__main__":
             if random.random() < rlim and cs.has_room_for(v):
                 cs.add_video(v)
     print("score: {}".format(score_calc.calculate_score(videos, endpoints, cservers, requests)))
+    score_calc.check_validity(cservers)
     outputwriter.write_output(cservers)
