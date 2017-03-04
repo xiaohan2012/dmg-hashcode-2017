@@ -60,7 +60,7 @@ for c in tqdm(range(C)):
         if (v, c) in vc2reqs:
             cv_pairs.append((c, v))
             imps.append(sum(r.n * (latency[(r.e, CENTER)] - latency[(r.e, c)])
-                            for r in vc2reqs[(v, c)]) / v2size[v])
+                            for r in vc2reqs[(v, c)]))  #  / v2size[v]
 
 cv_heap = build_heap(imps, cv_pairs)
 
@@ -119,7 +119,7 @@ def main(vc2reqs, v2size, latency, cv_heap, debug=False):
                             improvement += r.n * (latency[(r.e, req2c[r])] - latency[(r.e, c)])
                     else:
                         improvement += r.n * (latency[(r.e, CENTER)] - latency[(r.e, c)])
-                cv_heap.update_key((c, vb), improvement / v2size[vb])
+                cv_heap.update_key((c, vb), improvement)  #  / v2size[vb]
 
     if debug:
         print('remaining caps: {}'.format(caps))
